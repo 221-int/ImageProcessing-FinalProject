@@ -1,0 +1,15 @@
+# Fatigue Detector v6 - Requirements
+# Install: pip install -r requirements.txt
+#
+# Raspberry Pi 추가 설치:
+#   sudo apt-get install -y python3-opencv libatlas-base-dev
+#   pip install mediapipe-rpi4  (RPi4) 또는 mediapipe (일반)
+
+mediapipe>=0.10.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# mediapipe는 플랫폼에 따라 패키지명이 다를 수 있음:
+#   PC/Mac : mediapipe
+#   RPi4   : mediapipe-rpi4
+#   RPi 3  : mediapipe-rpi3
