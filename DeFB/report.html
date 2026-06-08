@@ -3,411 +3,122 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>눈 건강 리포트</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>눈 건강 리포트 — DeFB</title>
 <style>
-  :root {{
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --border: #2a2d3a;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --accent: #4ade80;
-    --warn: #fb923c;
-    --danger: #f87171;
-    --blue: #60a5fa;
-  }}
-  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  body {{
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    padding: 32px 24px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }}
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --border:#2a2d3a;
+    --text:#e2e8f0; --muted:#64748b;
+    --green:#4ade80; --orange:#fb923c; --red:#f87171; --blue:#60a5fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:32px 24px;max-width:1080px;margin:0 auto}
+  h1{font-size:1.75rem;font-weight:700;margin-bottom:6px}
+  h1 span{color:var(--green)}
+  .sub{color:var(--muted);font-size:.86rem;margin-bottom:28px}
 
-  /* 헤더 */
-  .header {{ margin-bottom: 36px; }}
-  .header h1 {{ font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; }}
-  .header h1 span {{ color: var(--accent); }}
-  .header p {{ color: var(--muted); margin-top: 6px; font-size: 0.88rem; }}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 16px}
+  .card .label{font-size:.72rem;color:var(--muted);margin-bottom:8px}
+  .card .value{font-size:2rem;font-weight:700;line-height:1}
+  .card .unit{font-size:.73rem;color:var(--muted);margin-top:5px}
 
-  /* 세션 탭 */
-  .session-tabs {{
-    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
-  }}
-  .session-tab {{
-    padding: 6px 14px; border-radius: 20px; font-size: 0.80rem;
-    border: 1px solid var(--border); background: var(--surface);
-    color: var(--muted); cursor: pointer; transition: all .15s;
-  }}
-  .session-tab.active {{
-    border-color: var(--accent); color: var(--accent); background: rgba(74,222,128,.08);
-  }}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px}
+  .section h3{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
 
-  /* 요약 카드 */
-  .cards {{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px; margin-bottom: 28px;
-  }}
-  .card {{
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px 18px;
-  }}
-  .card .label {{ font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }}
-  .card .value {{ font-size: 1.7rem; font-weight: 700; line-height: 1; }}
-  .card .unit  {{ font-size: 0.78rem; color: var(--muted); margin-top: 4px; }}
-  .card.good   {{ border-color: rgba(74,222,128,.3); }}
-  .card.warn   {{ border-color: rgba(251,146,60,.3); }}
-  .card.danger {{ border-color: rgba(248,113,113,.3); }}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
 
-  /* 차트 그리드 */
-  .charts {{ display: grid; gap: 20px; }}
-  .chart-row {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }}
-  .chart-box {{
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 22px;
-  }}
-  .chart-box h3 {{
-    font-size: 0.85rem; font-weight: 600; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 18px;
-  }}
-  .chart-box canvas {{ max-height: 220px; }}
-  .chart-box.wide {{ grid-column: 1 / -1; }}
-  .chart-box.wide canvas {{ max-height: 180px; }}
+  .insight{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:.88rem;line-height:1.55}
+  .iicon{font-size:1.05rem;flex-shrink:0;margin-top:1px}
 
-  /* 세션 테이블 */
-  .table-wrap {{
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 22px; margin-top: 20px; overflow-x: auto;
-  }}
-  .table-wrap h3 {{
-    font-size: 0.85rem; font-weight: 600; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px;
-  }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 0.84rem; }}
-  th, td {{ padding: 10px 12px; text-align: left; }}
-  th {{ color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); }}
-  tr:not(:last-child) td {{ border-bottom: 1px solid var(--border); }}
-  .pill {{
-    display: inline-block; padding: 2px 10px; border-radius: 20px;
-    font-size: 0.75rem; font-weight: 600;
-  }}
-  .pill.normal  {{ background: rgba(74,222,128,.15); color: var(--accent); }}
-  .pill.caution {{ background: rgba(251,146,60,.15); color: var(--warn); }}
-  .pill.danger  {{ background: rgba(248,113,113,.15); color: var(--danger); }}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th,td{padding:9px 12px;text-align:left}
+  th{color:var(--muted);font-weight:500;border-bottom:1px solid var(--border)}
+  tr:not(:last-child) td{border-bottom:1px solid var(--border)}
+  .sid{color:var(--muted);font-size:.76rem}
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+  .pill.normal{background:rgba(74,222,128,.15);color:var(--green)}
+  .pill.caution{background:rgba(251,146,60,.15);color:var(--orange)}
+  .pill.danger{background:rgba(248,113,113,.15);color:var(--red)}
 
-  @media (max-width: 640px) {{
-    .chart-row {{ grid-template-columns: 1fr; }}
-  }}
+  @media(max-width:640px){.two-col{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>👁 눈 건강 <span>리포트</span></h1>
-  <p>지능형 눈 깜빡임 감지 솔루션 · DeFB</p>
-</div>
-
-<!-- 세션 탭 -->
-<div class="session-tabs" id="tabs"></div>
+<h1>👁 눈 건강 <span>리포트</span></h1>
+<p class="sub">지능형 눈 깜빡임 감지 솔루션 · DeFB &nbsp;·&nbsp; 2026-06-08 11:18:27</p>
 
 <!-- 요약 카드 -->
-<div class="cards" id="cards"></div>
-
-<!-- 차트 -->
-<div class="charts">
-  <div class="chart-box wide">
-    <h3>⚡ 피로도 타임라인</h3>
-    <canvas id="chartFatigue"></canvas>
+<div class="cards">
+  <div class="card">
+    <div class="label">총 깜빡임 횟수</div>
+    <div class="value" style="color:#fb923c">148</div>
+    <div class="unit">회</div>
   </div>
-  <div class="chart-row">
-    <div class="chart-box">
-      <h3>👁 분당 깜빡임 (BPM)</h3>
-      <canvas id="chartBPM"></canvas>
-    </div>
-    <div class="chart-box">
-      <h3>🔄 깜빡임 완전성</h3>
-      <canvas id="chartComp"></canvas>
-    </div>
+  <div class="card">
+    <div class="label">분당 깜빡임 (BPM)</div>
+    <div class="value" style="color:#fb923c">21.5</div>
+    <div class="unit">정상 15 ~ 20 회/분</div>
   </div>
-  <div class="chart-row">
-    <div class="chart-box">
-      <h3>📊 단계 분포</h3>
-      <canvas id="chartStage"></canvas>
-    </div>
-    <div class="chart-box">
-      <h3>📈 EAR 타임라인</h3>
-      <canvas id="chartEAR"></canvas>
-    </div>
+  <div class="card">
+    <div class="label">세션 시간</div>
+    <div class="value" style="color:#a78bfa">6.9</div>
+    <div class="unit">분</div>
+  </div>
+  <div class="card">
+    <div class="label">평균 피로도</div>
+    <div class="value" style="color:#fb923c">53.0%</div>
+    <div class="unit">최대 83.3%</div>
   </div>
 </div>
 
-<!-- 세션 목록 테이블 -->
-<div class="table-wrap">
+<!-- 피로도 타임라인 -->
+<div class="section">
+  <h3>⚡ 피로도 타임라인</h3>
+  <svg width="100%" viewBox="0 0 800 160" xmlns="http://www.w3.org/2000/svg"><line x1="42" y1="132.0" x2="784" y2="132.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="136.0" fill="#475569" font-size="9" text-anchor="end">0%</text><line x1="42" y1="108.0" x2="784" y2="108.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="112.0" fill="#475569" font-size="9" text-anchor="end">20%</text><line x1="42" y1="84.0" x2="784" y2="84.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="88.0" fill="#475569" font-size="9" text-anchor="end">40%</text><line x1="42" y1="60.0" x2="784" y2="60.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="64.0" fill="#475569" font-size="9" text-anchor="end">60%</text><line x1="42" y1="36.0" x2="784" y2="36.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="40.0" fill="#475569" font-size="9" text-anchor="end">80%</text><line x1="42" y1="12.0" x2="784" y2="12.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="16.0" fill="#475569" font-size="9" text-anchor="end">100%</text><polygon points="42.0,132.0 42.0,56.8 95.0,58.0 148.0,54.7 201.0,69.7 254.0,63.4 307.0,71.0 360.0,85.9 413.0,81.1 466.0,56.3 519.0,55.6 572.0,64.8 625.0,58.9 678.0,77.5 731.0,79.8 784.0,91.2 784.0,132.0" fill="#f87171" fill-opacity="0.12"/><path d="M 42.0 56.8 L 95.0 58.0 L 148.0 54.7 L 201.0 69.7 L 254.0 63.4 L 307.0 71.0 L 360.0 85.9 L 413.0 81.1 L 466.0 56.3 L 519.0 55.6 L 572.0 64.8 L 625.0 58.9 L 678.0 77.5 L 731.0 79.8 L 784.0 91.2" stroke="#f87171" stroke-width="2" fill="none" stroke-linejoin="round"/><text x="42.0" y="148" fill="#475569" font-size="9" text-anchor="middle">0.0분</text><text x="95.0" y="148" fill="#475569" font-size="9" text-anchor="middle">0.5분</text><text x="148.0" y="148" fill="#475569" font-size="9" text-anchor="middle">1.0분</text><text x="201.0" y="148" fill="#475569" font-size="9" text-anchor="middle">1.5분</text><text x="254.0" y="148" fill="#475569" font-size="9" text-anchor="middle">2.0분</text><text x="307.0" y="148" fill="#475569" font-size="9" text-anchor="middle">2.5분</text><text x="360.0" y="148" fill="#475569" font-size="9" text-anchor="middle">3.0분</text><text x="413.0" y="148" fill="#475569" font-size="9" text-anchor="middle">3.5분</text><text x="466.0" y="148" fill="#475569" font-size="9" text-anchor="middle">4.0분</text><text x="519.0" y="148" fill="#475569" font-size="9" text-anchor="middle">4.5분</text><text x="572.0" y="148" fill="#475569" font-size="9" text-anchor="middle">5.0분</text><text x="625.0" y="148" fill="#475569" font-size="9" text-anchor="middle">5.5분</text><text x="678.0" y="148" fill="#475569" font-size="9" text-anchor="middle">6.0분</text><text x="731.0" y="148" fill="#475569" font-size="9" text-anchor="middle">6.5분</text><text x="784.0" y="148" fill="#475569" font-size="9" text-anchor="middle">7.0분</text><line x1="42" y1="12" x2="42" y2="132" stroke="#334155" stroke-width="1"/><line x1="42" y1="132" x2="784" y2="132" stroke="#334155" stroke-width="1"/></svg>
+</div>
+
+<!-- 2열 -->
+<div class="two-col">
+  <div class="section">
+    <h3>👁 분당 깜빡임 (BPM)</h3>
+    <svg width="100%" viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg"><line x1="30" y1="132.0" x2="490" y2="132.0" stroke="#2a2d3a" stroke-width="1"/><text x="26" y="136.0" fill="#475569" font-size="9" text-anchor="end">0</text><line x1="30" y1="99.7" x2="490" y2="99.7" stroke="#2a2d3a" stroke-width="1"/><text x="26" y="103.7" fill="#475569" font-size="9" text-anchor="end">10</text><line x1="30" y1="67.5" x2="490" y2="67.5" stroke="#2a2d3a" stroke-width="1"/><text x="26" y="71.5" fill="#475569" font-size="9" text-anchor="end">20</text><line x1="30" y1="35.2" x2="490" y2="35.2" stroke="#2a2d3a" stroke-width="1"/><text x="26" y="39.2" fill="#475569" font-size="9" text-anchor="end">30</text><rect x="30" y="67.5" width="460" height="16.1" fill="#4ade80" fill-opacity="0.07"/><text x="488" y="65.5" fill="#4ade80" font-size="8" text-anchor="end">정상 구간</text><rect x="32.0" y="67.5" width="61.7" height="64.5" fill="#4ade80" rx="3"/><text x="62.9" y="148" fill="#475569" font-size="9" text-anchor="middle">0분</text><text x="62.9" y="64.5" fill="#4ade80" font-size="8" text-anchor="middle">20</text><rect x="97.7" y="32.0" width="61.7" height="100.0" fill="#fb923c" rx="3"/><text x="128.6" y="148" fill="#475569" font-size="9" text-anchor="middle">1분</text><text x="128.6" y="29.0" fill="#fb923c" font-size="8" text-anchor="middle">31</text><rect x="163.4" y="73.9" width="61.7" height="58.1" fill="#4ade80" rx="3"/><text x="194.3" y="148" fill="#475569" font-size="9" text-anchor="middle">2분</text><text x="194.3" y="70.9" fill="#4ade80" font-size="8" text-anchor="middle">18</text><rect x="229.1" y="44.9" width="61.7" height="87.1" fill="#fb923c" rx="3"/><text x="260.0" y="148" fill="#475569" font-size="9" text-anchor="middle">3분</text><text x="260.0" y="41.9" fill="#fb923c" font-size="8" text-anchor="middle">27</text><rect x="294.9" y="57.8" width="61.7" height="74.2" fill="#fb923c" rx="3"/><text x="325.7" y="148" fill="#475569" font-size="9" text-anchor="middle">4분</text><text x="325.7" y="54.8" fill="#fb923c" font-size="8" text-anchor="middle">23</text><rect x="360.6" y="86.8" width="61.7" height="45.2" fill="#fb923c" rx="3"/><text x="391.4" y="148" fill="#475569" font-size="9" text-anchor="middle">5분</text><text x="391.4" y="83.8" fill="#fb923c" font-size="8" text-anchor="middle">14</text><rect x="426.3" y="83.6" width="61.7" height="48.4" fill="#4ade80" rx="3"/><text x="457.1" y="148" fill="#475569" font-size="9" text-anchor="middle">6분</text><text x="457.1" y="80.6" fill="#4ade80" font-size="8" text-anchor="middle">15</text><line x1="30" y1="12" x2="30" y2="132" stroke="#334155" stroke-width="1"/><line x1="30" y1="132" x2="490" y2="132" stroke="#334155" stroke-width="1"/></svg>
+  </div>
+  <div class="section">
+    <h3>🔄 깜빡임 완전성</h3>
+    <svg width="100%" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg"><path d="M 90.0 25.0 A 75 75 0 0 1 99.5 25.6 L 95.1 60.3 A 40 40 0 0 0 90.0 60.0 Z" fill="#4ade80" stroke="#1a1d27" stroke-width="2"><title>완전: 3회 (2%)</title></path><path d="M 99.5 25.6 A 75 75 0 1 1 53.4 34.5 L 70.5 65.1 A 40 40 0 1 0 95.1 60.3 Z" fill="#fb923c" stroke="#1a1d27" stroke-width="2"><title>불완전: 133회 (90%)</title></path><path d="M 53.4 34.5 A 75 75 0 0 1 90.0 25.0 L 90.0 60.0 A 40 40 0 0 0 70.5 65.1 Z" fill="#f87171" stroke="#1a1d27" stroke-width="2"><title>마이크로: 12회 (8%)</title></path><rect x="180" y="30" width="12" height="12" fill="#4ade80" rx="2"/><text x="196" y="40" fill="#cbd5e1" font-size="11">완전</text><text x="196" y="52" fill="#64748b" font-size="10">3회 (2%)</text><rect x="180" y="58" width="12" height="12" fill="#fb923c" rx="2"/><text x="196" y="68" fill="#cbd5e1" font-size="11">불완전</text><text x="196" y="80" fill="#64748b" font-size="10">133회 (90%)</text><rect x="180" y="86" width="12" height="12" fill="#f87171" rx="2"/><text x="196" y="96" fill="#cbd5e1" font-size="11">마이크로</text><text x="196" y="108" fill="#64748b" font-size="10">12회 (8%)</text></svg>
+  </div>
+</div>
+
+<!-- EAR 타임라인 -->
+<div class="section">
+  <h3>📈 EAR (눈 열림 비율) 타임라인</h3>
+  <svg width="100%" viewBox="0 0 800 160" xmlns="http://www.w3.org/2000/svg"><line x1="42" y1="132.0" x2="784" y2="132.0" stroke="#2a2d3a" stroke-width="1"/><text x="38" y="136.0" fill="#475569" font-size="9" text-anchor="end">0</text><polygon points="42.0,132.0 42.0,99.1 47.0,97.8 52.1,99.2 57.1,99.2 62.2,91.2 67.2,96.0 72.3,97.1 77.3,99.1 82.4,100.7 87.4,102.0 92.5,94.8 97.5,101.5 102.6,101.5 107.6,96.0 112.7,95.4 117.7,99.2 122.8,100.7 127.8,100.7 132.9,98.5 137.9,99.6 143.0,97.6 148.0,96.6 153.0,94.3 158.1,98.8 163.1,97.3 168.2,93.6 173.2,98.3 178.3,98.9 183.3,97.0 188.4,98.6 193.4,100.6 198.5,99.4 203.5,100.2 208.6,99.1 213.6,99.8 218.7,102.1 223.7,102.4 228.8,100.1 233.8,100.0 238.9,101.8 243.9,98.2 249.0,98.8 254.0,100.8 259.0,101.0 264.1,100.4 269.1,98.4 274.2,100.4 279.2,100.4 284.3,99.1 289.3,99.2 294.4,99.7 299.4,99.4 304.5,101.4 309.5,100.9 314.6,97.2 319.6,95.3 324.7,96.0 329.7,95.8 334.8,98.3 339.8,100.2 344.9,98.5 349.9,99.4 355.0,98.8 360.0,97.2 365.0,96.5 370.1,99.8 375.1,100.6 380.2,98.9 385.2,98.4 390.3,100.8 395.3,100.6 400.4,98.6 405.4,102.2 410.5,99.6 415.5,97.4 420.6,91.7 425.6,91.4 430.7,90.6 435.7,91.2 440.8,95.5 445.8,94.4 450.9,96.4 455.9,96.5 461.0,96.2 466.0,91.3 471.0,97.2 476.1,97.0 481.1,94.3 486.2,97.8 491.2,98.2 496.3,95.5 501.3,95.8 506.4,100.6 511.4,98.6 516.5,97.7 521.5,99.0 526.6,100.9 531.6,102.0 536.7,102.8 541.7,100.9 546.8,100.2 551.8,101.0 556.9,99.4 561.9,96.7 567.0,99.7 572.0,101.0 577.0,100.4 582.1,101.0 587.1,101.5 592.2,100.1 597.2,97.2 602.3,98.8 607.3,99.5 612.4,94.7 617.4,91.6 622.5,95.3 627.5,91.6 632.6,95.9 637.6,95.6 642.7,96.8 647.7,93.6 652.8,95.0 657.8,96.2 662.9,94.1 667.9,94.4 673.0,95.0 678.0,94.7 683.0,94.6 688.1,102.2 693.1,98.8 698.2,100.7 703.2,100.9 708.3,98.6 713.3,99.5 718.4,98.2 723.4,99.0 728.5,97.6 733.5,100.1 738.6,100.0 743.6,99.7 748.7,100.2 753.7,98.4 758.8,99.7 763.8,99.6 768.9,97.0 773.9,100.0 779.0,89.9 784.0,101.0 784.0,132.0" fill="#60a5fa" fill-opacity="0.12"/><path d="M 42.0 99.1 L 47.0 97.8 L 52.1 99.2 L 57.1 99.2 L 62.2 91.2 L 67.2 96.0 L 72.3 97.1 L 77.3 99.1 L 82.4 100.7 L 87.4 102.0 L 92.5 94.8 L 97.5 101.5 L 102.6 101.5 L 107.6 96.0 L 112.7 95.4 L 117.7 99.2 L 122.8 100.7 L 127.8 100.7 L 132.9 98.5 L 137.9 99.6 L 143.0 97.6 L 148.0 96.6 L 153.0 94.3 L 158.1 98.8 L 163.1 97.3 L 168.2 93.6 L 173.2 98.3 L 178.3 98.9 L 183.3 97.0 L 188.4 98.6 L 193.4 100.6 L 198.5 99.4 L 203.5 100.2 L 208.6 99.1 L 213.6 99.8 L 218.7 102.1 L 223.7 102.4 L 228.8 100.1 L 233.8 100.0 L 238.9 101.8 L 243.9 98.2 L 249.0 98.8 L 254.0 100.8 L 259.0 101.0 L 264.1 100.4 L 269.1 98.4 L 274.2 100.4 L 279.2 100.4 L 284.3 99.1 L 289.3 99.2 L 294.4 99.7 L 299.4 99.4 L 304.5 101.4 L 309.5 100.9 L 314.6 97.2 L 319.6 95.3 L 324.7 96.0 L 329.7 95.8 L 334.8 98.3 L 339.8 100.2 L 344.9 98.5 L 349.9 99.4 L 355.0 98.8 L 360.0 97.2 L 365.0 96.5 L 370.1 99.8 L 375.1 100.6 L 380.2 98.9 L 385.2 98.4 L 390.3 100.8 L 395.3 100.6 L 400.4 98.6 L 405.4 102.2 L 410.5 99.6 L 415.5 97.4 L 420.6 91.7 L 425.6 91.4 L 430.7 90.6 L 435.7 91.2 L 440.8 95.5 L 445.8 94.4 L 450.9 96.4 L 455.9 96.5 L 461.0 96.2 L 466.0 91.3 L 471.0 97.2 L 476.1 97.0 L 481.1 94.3 L 486.2 97.8 L 491.2 98.2 L 496.3 95.5 L 501.3 95.8 L 506.4 100.6 L 511.4 98.6 L 516.5 97.7 L 521.5 99.0 L 526.6 100.9 L 531.6 102.0 L 536.7 102.8 L 541.7 100.9 L 546.8 100.2 L 551.8 101.0 L 556.9 99.4 L 561.9 96.7 L 567.0 99.7 L 572.0 101.0 L 577.0 100.4 L 582.1 101.0 L 587.1 101.5 L 592.2 100.1 L 597.2 97.2 L 602.3 98.8 L 607.3 99.5 L 612.4 94.7 L 617.4 91.6 L 622.5 95.3 L 627.5 91.6 L 632.6 95.9 L 637.6 95.6 L 642.7 96.8 L 647.7 93.6 L 652.8 95.0 L 657.8 96.2 L 662.9 94.1 L 667.9 94.4 L 673.0 95.0 L 678.0 94.7 L 683.0 94.6 L 688.1 102.2 L 693.1 98.8 L 698.2 100.7 L 703.2 100.9 L 708.3 98.6 L 713.3 99.5 L 718.4 98.2 L 723.4 99.0 L 728.5 97.6 L 733.5 100.1 L 738.6 100.0 L 743.6 99.7 L 748.7 100.2 L 753.7 98.4 L 758.8 99.7 L 763.8 99.6 L 768.9 97.0 L 773.9 100.0 L 779.0 89.9 L 784.0 101.0" stroke="#60a5fa" stroke-width="2" fill="none" stroke-linejoin="round"/><text x="42.0" y="148" fill="#475569" font-size="9" text-anchor="middle">5s</text><text x="132.9" y="148" fill="#475569" font-size="9" text-anchor="middle">55s</text><text x="223.7" y="148" fill="#475569" font-size="9" text-anchor="middle">90s</text><text x="314.6" y="148" fill="#475569" font-size="9" text-anchor="middle">131s</text><text x="405.4" y="148" fill="#475569" font-size="9" text-anchor="middle">194s</text><text x="496.3" y="148" fill="#475569" font-size="9" text-anchor="middle">224s</text><text x="587.1" y="148" fill="#475569" font-size="9" text-anchor="middle">268s</text><text x="678.0" y="148" fill="#475569" font-size="9" text-anchor="middle">326s</text><text x="768.9" y="148" fill="#475569" font-size="9" text-anchor="middle">379s</text><line x1="42" y1="12" x2="42" y2="132" stroke="#334155" stroke-width="1"/><line x1="42" y1="132" x2="784" y2="132" stroke="#334155" stroke-width="1"/></svg>
+</div>
+
+<!-- 인사이트 -->
+<div class="section">
+  <h3>💡 분석 인사이트</h3>
+  <div class="insight"><span class="iicon">🟡</span><span>분당 깜빡임 <b>21.5회</b>입니다. 정상 범위(15~20회)를 살짝 벗어났습니다.</span></div>
+<div class="insight"><span class="iicon">🔴</span><span>깜빡임의 <b>90%가 불완전</b>합니다. 눈꺼풀이 완전히 닫히지 않아 눈물막 보충이 부족했습니다.</span></div>
+<div class="insight"><span class="iicon">🟡</span><span>평균 피로도 <b>53.0%</b> — 주의 구간. 작업 강도를 조절하세요.</span></div>
+</div>
+
+<!-- 세션 테이블 -->
+<div class="section">
   <h3>📋 세션 기록</h3>
-  <table id="sessionTable">
+  <table>
     <thead>
-      <tr>
-        <th>시각</th><th>세션 ID</th><th>시간</th>
-        <th>깜빡임</th><th>BPM</th><th>평균 피로도</th><th>최대 피로도</th><th>상태</th>
-      </tr>
+      <tr><th>시각</th><th>세션 ID</th><th>시간</th><th>깜빡임</th><th>BPM</th><th>평균 피로도</th><th>최대 피로도</th><th>상태</th></tr>
     </thead>
-    <tbody id="sessionTbody"></tbody>
+    <tbody><tr><td>2026-06-08 11:18:27</td><td class="sid">48bf3ad2</td><td>6.9분</td><td>148회</td><td>21.5</td><td>53.0%</td><td>83.3%</td><td><span class="pill caution">CAUTION</span></td></tr>
+<tr><td>2026-06-06 08:44:28</td><td class="sid">71424e14</td><td>0.6분</td><td>20회</td><td>32.0</td><td>73.6%</td><td>79.8%</td><td><span class="pill danger">DANGER</span></td></tr>
+<tr><td>2026-06-06 08:11:50</td><td class="sid">8f632632</td><td>1.3분</td><td>34회</td><td>26.5</td><td>68.2%</td><td>79.7%</td><td><span class="pill danger">DANGER</span></td></tr>
+<tr><td>2026-06-06 08:05:02</td><td class="sid">6322e201</td><td>1.2분</td><td>53회</td><td>42.8</td><td>65.9%</td><td>69.9%</td><td><span class="pill danger">DANGER</span></td></tr>
+<tr><td>2026-06-06 08:03:51</td><td class="sid">1c4347b4</td><td>0.3분</td><td>16회</td><td>48.7</td><td>67.7%</td><td>72.9%</td><td><span class="pill danger">DANGER</span></td></tr>
+</tbody>
   </table>
 </div>
 
-<script>
-const DATA = {"sessions": [{"id": "71424e14", "datetime": "2026-06-06 17:44:28", "duration_min": 0.6, "total_blinks": 20, "bpm": 32.0, "avg_fatigue": 73.6, "max_fatigue": 79.8}], "total_blinks": 20, "total_dur": 0.6, "stage_counts": {"Normal": 20, "Onset": 0, "Valley": 0, "Offset": 0}, "comp_counts": {"Complete": 0, "Incomplete": 18, "Micro": 2}, "snap_labels": [], "snap_fatigue": [], "snap_perclos": [], "snap_inc": [], "bpm_labels": [0], "bpm_values": [20], "ear_labels": [5.0, 5.4, 6.1, 7.9, 9.3, 9.6, 10.0, 10.9, 12.7, 14.1, 14.6, 15.7, 18.2, 18.8, 21.7, 23.7, 24.8, 26.8, 30.7, 35.3], "ear_values": [0.2298, 0.2422, 0.2521, 0.2543, 0.2553, 0.2978, 0.3146, 0.2809, 0.2363, 0.2522, 0.243, 0.2496, 0.2487, 0.2351, 0.2545, 0.2321, 0.2156, 0.2411, 0.2154, 0.2209]};
-
-let charts = {{}};
-let currentIdx = 0;
-
-function fatiguePill(val) {{
-  if (val < 30) return `<span class="pill normal">NORMAL</span>`;
-  if (val < 60) return `<span class="pill caution">CAUTION</span>`;
-  return `<span class="pill danger">DANGER</span>`;
-}}
-
-function renderTabs() {{
-  const el = document.getElementById('tabs');
-  DATA.sessions.forEach((s, i) => {{
-    const btn = document.createElement('button');
-    btn.className = 'session-tab' + (i === 0 ? ' active' : '');
-    btn.textContent = s.datetime + ' (' + s.duration_min + '분)';
-    btn.onclick = () => selectSession(i);
-    el.appendChild(btn);
-  }});
-}}
-
-function selectSession(idx) {{
-  currentIdx = idx;
-  document.querySelectorAll('.session-tab').forEach((b, i) =>
-    b.classList.toggle('active', i === idx));
-  renderCards(idx);
-  renderCharts(idx);
-}}
-
-function renderCards(idx) {{
-  const s = DATA.sessions[idx];
-  const fi = s.avg_fatigue;
-  const fiClass = fi < 30 ? 'good' : fi < 60 ? 'warn' : 'danger';
-
-  document.getElementById('cards').innerHTML = `
-    <div class="card">
-      <div class="label">총 깜빡임 횟수</div>
-      <div class="value" style="color:#60a5fa">${{s.total_blinks}}</div>
-      <div class="unit">회</div>
-    </div>
-    <div class="card">
-      <div class="label">분당 깜빡임 (BPM)</div>
-      <div class="value" style="color:#4ade80">${{s.bpm}}</div>
-      <div class="unit">회/분 (정상 15~20)</div>
-    </div>
-    <div class="card">
-      <div class="label">세션 시간</div>
-      <div class="value" style="color:#a78bfa">${{s.duration_min}}</div>
-      <div class="unit">분</div>
-    </div>
-    <div class="card ${{fiClass}}">
-      <div class="label">평균 피로도</div>
-      <div class="value" style="color:${{fi<30?'#4ade80':fi<60?'#fb923c':'#f87171'}}">${{fi}}%</div>
-      <div class="unit">최대 ${{s.max_fatigue}}%</div>
-    </div>
-  `;
-}}
-
-function renderCharts(idx) {{
-  // 차트 destroy
-  Object.values(charts).forEach(c => c && c.destroy());
-  charts = {{}};
-
-  const d = DATA;
-
-  // 공통 옵션
-  const gridColor = 'rgba(255,255,255,0.06)';
-  const textColor = '#94a3b8';
-  const baseFont  = {{ family: 'Segoe UI, system-ui, sans-serif', size: 11 }};
-
-  // 1. 피로도 타임라인
-  if (d.snap_labels.length) {{
-    charts.fatigue = new Chart(document.getElementById('chartFatigue'), {{
-      type: 'line',
-      data: {{
-        labels: d.snap_labels.map(v => v.toFixed(1) + '분'),
-        datasets: [
-          {{
-            label: '피로도 (%)',
-            data: d.snap_fatigue,
-            borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,.10)',
-            fill: true, tension: 0.4, pointRadius: 3,
-          }},
-          {{
-            label: 'PERCLOS (%)',
-            data: d.snap_perclos,
-            borderColor: '#60a5fa', backgroundColor: 'transparent',
-            tension: 0.4, pointRadius: 2,
-          }},
-          {{
-            label: '불완전 깜빡임 비율 (%)',
-            data: d.snap_inc,
-            borderColor: '#fb923c', backgroundColor: 'transparent',
-            borderDash: [4, 4], tension: 0.4, pointRadius: 2,
-          }},
-        ],
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: true,
-        plugins: {{ legend: {{ labels: {{ color: textColor, font: baseFont }} }} }},
-        scales: {{
-          x: {{ ticks: {{ color: textColor, font: baseFont }}, grid: {{ color: gridColor }} }},
-          y: {{
-            min: 0, max: 100,
-            ticks: {{ color: textColor, font: baseFont, callback: v => v + '%' }},
-            grid: {{ color: gridColor }},
-          }},
-        }},
-      }},
-    }});
-  }}
-
-  // 2. BPM (분당 깜빡임)
-  if (d.bpm_labels.length) {{
-    charts.bpm = new Chart(document.getElementById('chartBPM'), {{
-      type: 'bar',
-      data: {{
-        labels: d.bpm_labels.map(v => v + '분'),
-        datasets: [{{
-          label: '깜빡임 수',
-          data: d.bpm_values,
-          backgroundColor: d.bpm_values.map(v =>
-            v >= 15 && v <= 20 ? 'rgba(74,222,128,.7)' :
-            v < 10              ? 'rgba(248,113,113,.7)' : 'rgba(251,146,60,.7)'
-          ),
-          borderRadius: 4,
-        }}],
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: true,
-        plugins: {{
-          legend: {{ display: false }},
-          tooltip: {{
-            callbacks: {{
-              afterLabel: ctx => {{
-                const v = ctx.parsed.y;
-                if (v >= 15 && v <= 20) return '✅ 정상';
-                if (v < 10)             return '⚠️ 부족';
-                return '🟡 주의';
-              }}
-            }}
-          }}
-        }},
-        scales: {{
-          x: {{ ticks: {{ color: textColor, font: baseFont }}, grid: {{ color: gridColor }} }},
-          y: {{
-            beginAtZero: true,
-            ticks: {{ color: textColor, font: baseFont }},
-            grid: {{ color: gridColor }},
-          }},
-        }},
-      }},
-    }});
-  }}
-
-  // 3. 완전성 도넛
-  const cc = d.comp_counts;
-  charts.comp = new Chart(document.getElementById('chartComp'), {{
-    type: 'doughnut',
-    data: {{
-      labels: ['완전 깜빡임', '불완전', '마이크로'],
-      datasets: [{{
-        data: [cc.Complete, cc.Incomplete, cc.Micro],
-        backgroundColor: ['rgba(74,222,128,.8)', 'rgba(251,146,60,.8)', 'rgba(248,113,113,.8)'],
-        borderColor: '#1a1d27', borderWidth: 3,
-      }}],
-    }},
-    options: {{
-      responsive: true, maintainAspectRatio: true,
-      plugins: {{
-        legend: {{ position: 'right', labels: {{ color: textColor, font: baseFont, padding: 14 }} }},
-      }},
-    }},
-  }});
-
-  // 4. 단계 분포 도넛
-  const sc = d.stage_counts;
-  charts.stage = new Chart(document.getElementById('chartStage'), {{
-    type: 'doughnut',
-    data: {{
-      labels: ['Normal', 'Onset', 'Valley', 'Offset'],
-      datasets: [{{
-        data: [sc.Normal, sc.Onset, sc.Valley, sc.Offset],
-        backgroundColor: [
-          'rgba(74,222,128,.8)', 'rgba(96,165,250,.8)',
-          'rgba(167,139,250,.8)', 'rgba(251,146,60,.8)'
-        ],
-        borderColor: '#1a1d27', borderWidth: 3,
-      }}],
-    }},
-    options: {{
-      responsive: true, maintainAspectRatio: true,
-      plugins: {{
-        legend: {{ position: 'right', labels: {{ color: textColor, font: baseFont, padding: 14 }} }},
-      }},
-    }},
-  }});
-
-  // 5. EAR 타임라인
-  if (d.ear_labels.length) {{
-    charts.ear = new Chart(document.getElementById('chartEAR'), {{
-      type: 'line',
-      data: {{
-        labels: d.ear_labels.map(v => v.toFixed(0) + 's'),
-        datasets: [{{
-          label: 'EAR',
-          data: d.ear_values,
-          borderColor: 'rgba(96,165,250,.8)',
-          backgroundColor: 'rgba(96,165,250,.05)',
-          fill: true, tension: 0.3, pointRadius: 0, borderWidth: 1.5,
-        }}],
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: true,
-        plugins: {{ legend: {{ display: false }} }},
-        scales: {{
-          x: {{ ticks: {{ color: textColor, font: baseFont, maxTicksLimit: 8 }}, grid: {{ color: gridColor }} }},
-          y: {{ ticks: {{ color: textColor, font: baseFont }}, grid: {{ color: gridColor }} }},
-        }},
-      }},
-    }});
-  }}
-}}
-
-function renderTable() {{
-  const tbody = document.getElementById('sessionTbody');
-  DATA.sessions.forEach(s => {{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${{s.datetime}}</td>
-      <td style="color:#64748b;font-size:.78rem">${{s.id}}</td>
-      <td>${{s.duration_min}}분</td>
-      <td>${{s.total_blinks}}회</td>
-      <td>${{s.bpm}}</td>
-      <td>${{s.avg_fatigue}}%</td>
-      <td>${{s.max_fatigue}}%</td>
-      <td>${{fatiguePill(s.avg_fatigue)}}</td>
-    `;
-    tbody.appendChild(tr);
-  }});
-}}
-
-// 초기화
-renderTabs();
-renderCards(0);
-renderCharts(0);
-renderTable();
-</script>
 </body>
 </html>
